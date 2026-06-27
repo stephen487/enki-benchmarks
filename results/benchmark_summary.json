@@ -1,0 +1,31 @@
+{
+  "benchmark": "LongMemEval-S",
+  "comparison": "Enki vs mem0 (head-to-head)",
+  "method": "Identical conversation histories ingested by both systems; same answerer (claude-haiku-4-5) and same LLM-as-judge; equal retrieval depth (K=10); the memory layer is the only variable.",
+  "slice": "25 instances (validated; full run in progress)",
+  "accuracy_correct_at_k10": {
+    "enki_total": 14,
+    "mem0_total": 12,
+    "by_question_type": {
+      "multi_session":              { "enki": 4, "mem0": 2, "n": 5 },
+      "knowledge_update":           { "enki": 3, "mem0": 3, "n": 5 },
+      "single_session_user":        { "enki": 3, "mem0": 3, "n": 5 },
+      "single_session_assistant":   { "enki": 2, "mem0": 2, "n": 5 },
+      "single_session_preference":  { "enki": 2, "mem0": 2, "n": 5 }
+    }
+  },
+  "storage": {
+    "enki_mean_facts": 138,
+    "mem0_mean_facts": 283,
+    "ratio_enki_over_mem0": 0.49
+  },
+  "retrieval_latency_ms": {
+    "mean": 7.6,
+    "p50": 6.1,
+    "p95": 11.9,
+    "p99": 13.0,
+    "store_size_facts": 139,
+    "hardware": "CPU-only",
+    "samples": 240
+  }
+}
