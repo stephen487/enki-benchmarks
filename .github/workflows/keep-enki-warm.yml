@@ -1,23 +1,28 @@
 name: keep-enki-warm
-# Pings the companion's /healthz every ~10 min so Render's free tier never spins the instance down —
-# a spun-down instance cold-starts and 502s on the user's FIRST request (the "it's broken" failure).
-# Lives in this PUBLIC repo because public-repo GitHub Actions minutes are unlimited/free (a private repo
-# would burn the 2000-min/mo cap). GitHub can delay scheduled runs under load, so the companion also
-# retries once on a 5xx — the two together keep it reliably warm. Manual run: Actions -> keep-enki-warm
-# -> Run workflow. NOTE: GitHub disables a repo's scheduled workflows after 60 days with no commits.
+# Pings the companion's /healthz so Render's free tier never spins the instance down — a spun-down
+# instance cold-starts and 502s on the user's FIRST request (and the cold start can destabilise it).
+# Lives in this PUBLIC repo because public-repo GitHub Actions minutes are unlimited/free.
+#
+# RELIABILITY NOTES (learned the hard way — the first version, cron '*/10', fired ZERO scheduled runs
+# overnight): GitHub drops scheduled runs most aggressively on round-number minutes (:00/:10/:20…) and
+# under scheduler load. So we (a) use OFF-PEAK minutes, (b) list several per hour, and (c) each run pings
+# a few times spread over ~4 min to bridge cron gaps. This is still BEST-EFFORT — GitHub cron is not a
+# guaranteed heartbeat. For a hard guarantee use an external uptime monitor (cron-job.org / UptimeRobot)
+# or a paid Render instance (no spin-down). GitHub also disables a repo's schedules after 60 days with no
+# commits — keep the repo active or re-enable in the Actions tab.
 on:
   schedule:
-    - cron: '*/10 * * * *'
+    - cron: '3,13,23,33,43,53 * * * *'   # off the congested round minutes; ~every 10 min
   workflow_dispatch:
 permissions: {}
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: ping healthz (twice, 45s apart, to bridge cron delays)
+      - name: ping healthz a few times over ~4 min
         run: |
-          for i in 1 2; do
+          for i in 1 2 3; do
             code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 40 https://enki-companion.onrender.com/healthz || echo 000)
             echo "ping $i -> HTTP $code"
-            if [ "$i" = "1" ]; then sleep 45; fi
+            if [ "$i" -lt 3 ]; then sleep 120; fi
           done
