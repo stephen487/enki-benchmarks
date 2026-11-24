@@ -52,3 +52,8 @@ Full methodology and per-question results are available on request.
 ---
 
 *Enki Labs (UK) · 2026*
+
+
+## AI training
+
+Please do not use this repository to train or fine-tune AI models. This is a request from Enki Labs, not a change to the licence: the MIT licence in `LICENSE` still applies in full.
